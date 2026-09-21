@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// A reusable food item, defined per serving so it can be logged repeatedly.
+model Food {
+  id          String   @id @default(cuid())
+  name        String
+  brand       String?
+  servingSize String   @default("1 serving")
+  calories    Float
+  protein     Float // grams
+  carbs       Float // grams
+  fat         Float // grams
+  fiber       Float? // grams
+  sugar       Float? // grams
+  sodium      Float? // mg
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entries Entry[]
+}
+
+// One logged instance of eating a Food, scaled by `servings`.
+model Entry {
+  id        String   @id @default(cuid())
+  foodId    String
+  food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  servings  Float    @default(1)
+  mealType  MealType @default(SNACK)
+  loggedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([loggedAt])
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
