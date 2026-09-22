@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { parseLocalDate } from "@/lib/date";
 
 // Returns entries for a given day (defaults to today), local-date based via
 // a `date` query param in YYYY-MM-DD form.
 export async function GET(req: NextRequest) {
   const dateParam = req.nextUrl.searchParams.get("date");
-  const date = dateParam ? new Date(dateParam) : new Date();
+  const date = dateParam ? parseLocalDate(dateParam) : new Date();
 
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
