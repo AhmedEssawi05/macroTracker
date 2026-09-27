@@ -110,9 +110,17 @@ export default async function DashboardPage({
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-neutral-600">
-          Entries
-        </h2>
+        <div className="mb-3 flex items-baseline justify-between">
+          <h2 className="text-sm font-semibold text-neutral-600">Entries</h2>
+          {!isToday && (
+            <Link
+              href={`/log?date=${dayStr}`}
+              className="text-sm text-neutral-600 underline"
+            >
+              Log food for this day
+            </Link>
+          )}
+        </div>
         <EntryList
           isToday={isToday}
           entries={entries.map((e) => ({

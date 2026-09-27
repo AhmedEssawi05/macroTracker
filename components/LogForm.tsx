@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { parseLocalDate } from "@/lib/date";
 
 type FoodOption = {
   id: string;
@@ -26,8 +27,17 @@ const emptyNewFood = {
   fat: "",
 };
 
-export function LogForm({ foods }: { foods: FoodOption[] }) {
+export function LogForm({
+  foods,
+  initialDate,
+  today,
+}: {
+  foods: FoodOption[];
+  initialDate: string; // YYYY-MM-DD
+  today: string; // YYYY-MM-DD
+}) {
   const router = useRouter();
+  const [date, setDate] = useState(initialDate);
   const [query, setQuery] = useState("");
   const [selectedFoodId, setSelectedFoodId] = useState<string | null>(null);
   const [servings, setServings] = useState("1");
@@ -47,6 +57,16 @@ export function LogForm({ foods }: { foods: FoodOption[] }) {
   async function handleLogEntry() {
     if (!selectedFoodId) return;
     setSubmitting(true);
+    const isToday = !date || date === today;
+    // Backfilled entries keep the current time of day on the chosen date, so
+    // they sort naturally alongside that day's other entries.
+    let loggedAt: string | undefined;
+    if (!isToday) {
+      const now = new Date();
+      const day = parseLocalDate(date);
+      day.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+      loggedAt = day.toISOString();
+    }
     await fetch("/api/entries", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -54,10 +74,11 @@ export function LogForm({ foods }: { foods: FoodOption[] }) {
         foodId: selectedFoodId,
         servings: Number(servings) || 1,
         mealType,
+        loggedAt,
       }),
     });
     setSubmitting(false);
-    router.push("/");
+    router.push(isToday ? "/" : `/?date=${date}`);
     router.refresh();
   }
 
@@ -80,6 +101,17 @@ export function LogForm({ foods }: { foods: FoodOption[] }) {
 
   return (
     <div className="space-y-6">
+      <div>
+        <label className="mb-1 block text-sm font-medium">Date</label>
+        <input
+          type="date"
+          max={today}
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+        />
+      </div>
+
       <div>
         <label className="mb-1 block text-sm font-medium">Search foods</label>
         <input
