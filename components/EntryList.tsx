@@ -19,7 +19,13 @@ type EntryListItem = {
   };
 };
 
-export function EntryList({ entries }: { entries: EntryListItem[] }) {
+export function EntryList({
+  entries,
+  isToday = true,
+}: {
+  entries: EntryListItem[];
+  isToday?: boolean;
+}) {
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -31,6 +37,9 @@ export function EntryList({ entries }: { entries: EntryListItem[] }) {
   }
 
   if (entries.length === 0) {
+    if (!isToday) {
+      return <p className="text-sm text-neutral-500">Nothing logged this day.</p>;
+    }
     return (
       <p className="text-sm text-neutral-500">
         Nothing logged yet today. Head to{" "}
