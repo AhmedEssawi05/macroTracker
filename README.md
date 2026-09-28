@@ -21,13 +21,13 @@ See [`prisma/schema.prisma`](./prisma/schema.prisma).
 npm install
 cp .env.example .env   # already points at a local SQLite file
 npm run db:migrate     # create the SQLite database + tables
-npm run db:seed        # optional: seed a handful of common foods
+npm run db:seed        # seeds 5 common foods + a full day of logged entries, so the demo isn't empty
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-- `/` — today's totals against daily goals, plus a list of today's entries.
+- `/` — today's totals against daily goals, plus a list of today's entries. Right after seeding you'll see a populated demo day: eggs + yogurt at breakfast, chicken + rice at lunch, a banana snack.
 - `/log` — search existing foods (or add a new one) and log an entry.
 
 ## Scripts
@@ -38,7 +38,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run build`       | Production build                              |
 | `npm run lint`        | Run ESLint                                    |
 | `npm run db:migrate`  | Run Prisma migrations                         |
-| `npm run db:seed`     | Seed a few common foods                       |
+| `npm run db:seed`     | Seed a few common foods + a demo day of entries |
 | `npm run db:studio`   | Open Prisma Studio to browse/edit data        |
 
 ## API routes

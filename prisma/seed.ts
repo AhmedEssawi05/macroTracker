@@ -46,14 +46,51 @@ const foods = [
 ];
 
 async function main() {
+  const savedFoods: Record<string, { id: string }> = {};
   for (const food of foods) {
-    await prisma.food.upsert({
-      where: { id: food.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") },
+    const id = food.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    savedFoods[food.name] = await prisma.food.upsert({
+      where: { id },
       update: {},
-      create: { id: food.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"), ...food },
+      create: { id, ...food },
     });
   }
   console.log(`Seeded ${foods.length} foods.`);
+
+  const today = new Date();
+  const at = (hours: number, minutes: number) => {
+    const d = new Date(today);
+    d.setHours(hours, minutes, 0, 0);
+    return d;
+  };
+
+  const demoEntries: { food: string; servings: number; mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK"; loggedAt: Date }[] = [
+    { food: "Egg, large", servings: 2, mealType: "BREAKFAST", loggedAt: at(8, 15) },
+    { food: "Greek yogurt, plain", servings: 1, mealType: "BREAKFAST", loggedAt: at(8, 20) },
+    { food: "Chicken breast, cooked", servings: 1.5, mealType: "LUNCH", loggedAt: at(12, 45) },
+    { food: "White rice, cooked", servings: 1, mealType: "LUNCH", loggedAt: at(12, 45) },
+    { food: "Banana", servings: 1, mealType: "SNACK", loggedAt: at(15, 30) },
+  ];
+
+  let entryCount = 0;
+  for (const entry of demoEntries) {
+    const food = savedFoods[entry.food];
+    const existing = await prisma.entry.findFirst({
+      where: { foodId: food.id, mealType: entry.mealType, loggedAt: entry.loggedAt },
+    });
+    if (!existing) {
+      await prisma.entry.create({
+        data: {
+          foodId: food.id,
+          servings: entry.servings,
+          mealType: entry.mealType,
+          loggedAt: entry.loggedAt,
+        },
+      });
+      entryCount++;
+    }
+  }
+  console.log(`Seeded ${entryCount} logged entries for today.`);
 }
 
 main()
